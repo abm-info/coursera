@@ -46,7 +46,7 @@ if (isset($_POST['who']) && isset($_POST['pass']))
 <html>
 <head>
     <?php require_once "bootstrap.php"; ?>
-    <title>Ambika Patidar (437aadef)'s Login Page</title>
+    <title>Achraf EL BOUKHARI's Login Page</title>
 </head>
 <body>
 <div class="container">
