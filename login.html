@@ -1,33 +1,26 @@
 <?php
 require_once "pdo.php";
 
+$failure = false;
+
 if (isset($_POST['cancel'])) {
-    // Redirect the browser to index.php
     header("Location: index.php");
-    exit;
+    return;
 }
 
-$salt = 'XyZzy12*_';
-$stored_hash = password_hash('XyZzy12*_php123', PASSWORD_DEFAULT);  // Password is php123
-$errors = array();  // If we have no POST data
+if (isset($_POST['email']) && isset($_POST['pass'])) {
+    // Fetch user from the database based on the provided email
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
+    $stmt->execute(array(':email' => $_POST['email']));
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Check to see if we have some POST data, if we do process it
-if (isset($_POST['who']) && isset($_POST['pass'])) {
-    if (strlen($_POST['who']) < 1 || strlen($_POST['pass']) < 1) {
-        $errors[] = "User name and password are required";
-    } elseif (strpos($_POST['who'], "@") === false) {
-        $errors[] = "Email must have an at-sign (@)";
+    if ($user === false || !password_verify($_POST['pass'], $user['password'])) {
+        // Incorrect email or password
+        $failure = "Incorrect email or password";
     } else {
-        $check = password_verify($salt . $_POST['pass'], $stored_hash);
-        if ($check) {
-            error_log("Login success ".$_POST['who']);
-            // Redirect the browser to autos.php
-            header("Location: autos.php?name=" . urlencode($_POST['who']));
-            exit;
-        } else {
-            $errors[] = "Incorrect password";
-            error_log("Login fail ".$_POST['who']." $check");
-        }
+        // Successful login logic, redirect to the desired page
+        header("Location: autos.php?name=" . urlencode($_POST['email']));
+        return;
     }
 }
 ?>
@@ -36,21 +29,19 @@ if (isset($_POST['who']) && isset($_POST['pass'])) {
 <html>
 <head>
     <?php require_once "bootstrap.php"; ?>
-    <title>Ambika Patidar (437aadef)'s Login Page</title>
+    <title>>Achraf EL BOUKHARI EL MAMOUN (d4cbd55f)'s Login Page</title>
 </head>
 <body>
 <div class="container">
     <h1>Please Log In</h1>
     <?php
-    if (!empty($errors)) {
-        foreach ($errors as $error) {
-            echo('<p style="color: red;">' . htmlentities($error) . "</p>\n");
-        }
+    if ($failure !== false) {
+        echo('<p style="color: red;">' . htmlentities($failure) . "</p>\n");
     }
     ?>
     <form method="POST">
         <label for="nam">User Name</label>
-        <input type="text" name="who" id="nam"><br/>
+        <input type="text" name="email" id="nam"><br/>
         <label for="id_1723">Password</label>
         <input type="password" name="pass" id="id_1723"><br/>
         <input type="submit" value="Log In">
